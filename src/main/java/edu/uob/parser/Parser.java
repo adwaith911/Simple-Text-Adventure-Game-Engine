@@ -34,7 +34,7 @@ public class Parser {
 
             this.gameModel.setCurrentPlayer(this.gameModel.getPlayerList().get(this.currentPlayer));
 
-            String matchedCommand = findMatchingCommand(this.tokenMap);
+            String matchedCommand = this.findMatchingCommand(this.tokenMap);
 
             switch (matchedCommand) {
                 case "inventory":
@@ -49,9 +49,9 @@ public class Parser {
                 case "look":
                     return new LookCommand(this.tokenMap);
                 default:
-                    if (validateCommand(this.tokenMap)) {
-                        if (getPossibleActions(this.tokenMap).size() == 1) {
-                            return new CustomCommand(this.tokenMap, getPossibleActions(this.tokenMap).iterator().next());
+                    if (this.validateCommand(this.tokenMap)) {
+                        if (this.getPossibleActions(this.tokenMap).size() == 1) {
+                            return new CustomCommand(this.tokenMap, this.getPossibleActions(this.tokenMap).iterator().next());
                         } else {
                             throw new ParserException("Ambiguous command, multiple possible actions");
                         }
@@ -59,7 +59,7 @@ public class Parser {
                     throw new ParserException("Invalid command");
             }
         } catch (Exception e) {
-            throw new ParserException("Error parsing command: " + e.getMessage());
+            throw new ParserException(String.format("Error parsing command: %s", e.getMessage()));
         }
     }
     private String findMatchingCommand(HashMap<String, Integer> tokenMap) {
@@ -116,7 +116,7 @@ public class Parser {
         HashSet<GameAction> possibleActions = new HashSet<>();
         for (Map.Entry<String, HashSet<GameAction>> entry : this.gameModel.getActionList().entrySet()) {
             if (tokenMap.containsKey(entry.getKey())) {
-                Set<String> subjects = checkSubjectInCommand(entry.getValue());
+                Set<String> subjects = this.checkSubjectInCommand(entry.getValue());
                 if (subjects != null) {
                     if (checkSubjectAvailability(subjects))
                         possibleActions.addAll(entry.getValue());

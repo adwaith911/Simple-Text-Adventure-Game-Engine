@@ -64,11 +64,9 @@ public class GameModel {
             playerList = new HashMap<>();
             currentPlayer = null;
             startingLocation = null;
-            loadEntities(entitiesFile);
-            loadActionsFile(actionsFile);
-            printActions();
-            printEntities();
-            printPaths();
+            this.loadEntities(entitiesFile);
+            this.loadActionsFile(actionsFile);
+
         }catch(Exception e) {
             e.printStackTrace();
         }
@@ -79,13 +77,11 @@ public class GameModel {
         Document document = builder.parse(actionsFile);
         Element root = document.getDocumentElement();
         NodeList actions = root.getChildNodes();
-        // Get actions by index (only odd items are actions - 1,3,5 etc.)
         for(int i=1; i<actions.getLength(); i+=2){
             Element action = (Element) actions.item(i);
             GameAction newAction = new GameAction();
             Element triggers = (Element)action.getElementsByTagName("triggers").item(0);
 
-            // Add attributes to newAction
             for(actionAttributeType type : actionAttributeType.values()) {
                 Element currentType = (Element) action.getElementsByTagName(type.toString()).item(0);
                 for(int k=0; k<currentType.getElementsByTagName("entity").getLength(); k++) {
@@ -148,9 +144,9 @@ public class GameModel {
             // Process locations and their contents
             for (Graph subGraph : subGraphs) {
                 if (subGraph.getId().getId().equals("locations")) {
-                    processLocations(subGraph);
+                    this.processLocations(subGraph);
                 } else if (subGraph.getId().getId().equals("paths")) {
-                    processPaths(subGraph);
+                    this.processPaths(subGraph);
                 }
             }
 
@@ -172,7 +168,7 @@ public class GameModel {
                 // If this node is not a subgraph, it represents the location.
                 if (!node.isSubgraph()) {
                     currentLocation = node.getId().getId();
-                    String description = getNodeAttribute(node, "description");
+                    String description = this.getNodeAttribute(node, "description");
                     locationEntity = new Location(currentLocation, "location", description, null);
                     if(this.startingLocation == null){
                         this.startingLocation = locationEntity;
@@ -192,7 +188,7 @@ public class GameModel {
                 String entityType = subgraph.getId().getId(); // e.g., "artefacts", "furniture", or "characters"
                 for (Node subNode : subgraph.getNodes(false)) {
                     String entityId = subNode.getId().getId();
-                    String description = getNodeAttribute(subNode, "description");
+                    String description = this.getNodeAttribute(subNode, "description");
 
                     // Skip nodes that are just default definitions
                     if (entityId.equals("node")) {
@@ -267,23 +263,4 @@ public class GameModel {
         paths.get(fromLocation).add(toLocation);
     }
 
-    public void printEntities() {
-        for (GameEntity gameEntity : entityList.values()) {
-            System.out.println(gameEntity);
-        }
-    }
-
-    public void printPaths() {
-        for (Map.Entry<String, HashSet<String>> entry : paths.entrySet()) {
-            for (String destination : entry.getValue()) {
-                System.out.println(entry.getKey() + " -> " + destination);
-            }
-        }
-    }
-
-    public void printActions() {
-        for (Map.Entry<String, HashSet<GameAction>> entry : actionList.entrySet()) {
-            System.out.println("Trigger: " + entry.getKey() + " -> " + entry.getValue());
-        }
-    }
 }

@@ -21,7 +21,7 @@ public class Executor implements CommandExecutor {
         try {
             Player currentPlayer = this.gameModel.getCurrentPlayer();
             Map<String, GameEntity> playerInventory = currentPlayer.getInventory();
-            String item = checkEntityList(tokenMap, playerInventory);
+            String item = this.checkEntityList(tokenMap, playerInventory);
             if (item == null) {
                 throw new ExecutorException("Item to be dropped is not in inventory or multiple items in command");
             }
@@ -29,8 +29,8 @@ public class Executor implements CommandExecutor {
             Location currentLocation = currentPlayer.getCurrentLocation();
             currentLocation.addAttribute(artefact.getId(), artefact);
             currentPlayer.removeFromInventory(artefact.getId());
-            updateLocationInGameModel(currentLocation);
-            updatePlayerInGameModel(currentPlayer);
+            this.updateLocationInGameModel(currentLocation);
+            this.updatePlayerInGameModel(currentPlayer);
 
             return new StringBuilder()
                     .append("You dropped a ")
@@ -47,15 +47,15 @@ public class Executor implements CommandExecutor {
         try {
             Player currentPlayer = this.gameModel.getCurrentPlayer();
             Location currentLocation = currentPlayer.getCurrentLocation();
-            String item = checkEntityList(tokenMap, currentLocation.getAttributes());
+            String item = this.checkEntityList(tokenMap, currentLocation.getAttributes());
             if (item == null) {
                 throw new ExecutorException("Invalid item to get or multiple items in command");
             }
             GameEntity artefact = currentLocation.getAttributes().get(item.toLowerCase());
             currentPlayer.addToInventory(artefact.getId(), artefact);
             currentLocation.removeAttribute(artefact.getId());
-            updateLocationInGameModel(currentLocation);
-            updatePlayerInGameModel(currentPlayer);
+            this.updateLocationInGameModel(currentLocation);
+            this.updatePlayerInGameModel(currentPlayer);
             return new StringBuilder()
                     .append("You picked up a ")
                     .append(artefact.getId())
@@ -78,7 +78,10 @@ public class Executor implements CommandExecutor {
                 for (Map.Entry<String, GameEntity> entry : playerInventory.entrySet()) {
                     GameEntity entity = entry.getValue();
                     if (entity.getType().equals("artefact")) {
-                        artefacts.append(entity.getId() + " - " + entity.getDescription() + "\n");
+                        artefacts.append(entity.getId())
+                                .append(" - ")
+                                .append(entity.getDescription())
+                                .append("\n");
                     }
                 }
             }
@@ -100,12 +103,12 @@ public class Executor implements CommandExecutor {
                     .append(currentLocation.getDescription())
                     .append("\n\n"));
             if (!currentLocation.getAttributes().isEmpty()) {
-                describeEntities(description, currentLocation);
+                this.describeEntities(description, currentLocation);
             }
             if (!this.gameModel.getPaths().get(currentLocation.getId()).isEmpty()) {
-                describePaths(description, currentLocation);
+                this.describePaths(description, currentLocation);
             }
-            describeOtherPlayers(description);
+            this.describeOtherPlayers(description);
             return description.toString();
         }catch(Exception e) {
             throw new ExecutorException(e.getMessage());
@@ -116,7 +119,7 @@ public class Executor implements CommandExecutor {
     public String executeGotoCommand(HashMap<String, Integer> tokenMap) throws ExecutorException {
         try {
             Location currentLocation = this.gameModel.getCurrentPlayer().getCurrentLocation();
-            String locationName = getPathToLocation(tokenMap, this.gameModel.getPaths(), currentLocation);
+            String locationName = this.getPathToLocation(tokenMap, this.gameModel.getPaths(), currentLocation);
             if (locationName == null) {
                 throw new ExecutorException("Path to this location doesnt exist from current location");
             }
@@ -137,12 +140,12 @@ public class Executor implements CommandExecutor {
         try {
             Set<String> consumedEntities = gameAction.getConsumed();
             for (String consumedEntity : consumedEntities) {
-                consumeEntities(consumedEntity);
+                this.consumeEntities(consumedEntity);
             }
 
             if (this.gameModel.getCurrentPlayer().isDead()) {
                 this.gameModel.getCurrentPlayer().resetHealth();
-                transferInventoryToCurrentLocation();
+                this.transferInventoryToCurrentLocation();
                 Location startingLocation = this.gameModel.getStartingLocation();
                 this.gameModel.getCurrentPlayer().setCurrentLocation(startingLocation);
                 return "You are dead and will appear in starting location";
@@ -151,7 +154,7 @@ public class Executor implements CommandExecutor {
             Set<String> producedEntities = gameAction.getProduced();
             if (!gameAction.getProduced().isEmpty()) {
                 for (String producedEntity : producedEntities) {
-                    produceEntities(producedEntity);
+                    this.produceEntities(producedEntity);
                 }
             }
             return gameAction.getNarration();
@@ -162,17 +165,17 @@ public class Executor implements CommandExecutor {
 
 
     private void consumeEntities(String consumedEntity) throws ExecutorException {
-        consumeHealth(consumedEntity);
-        consumePath(consumedEntity);
-        consumeFromPlayer(consumedEntity);
-        consumeFromLocations(consumedEntity);
+        this.consumeHealth(consumedEntity);
+        this.consumePath(consumedEntity);
+        this.consumeFromPlayer(consumedEntity);
+        this.consumeFromLocations(consumedEntity);
     }
 
     private void consumeHealth(String consumedEntity) {
         if(consumedEntity.equalsIgnoreCase("health")) {
             Player currentPlayer = this.gameModel.getCurrentPlayer();
             currentPlayer.decreaseHealth();
-            updatePlayerInGameModel(currentPlayer);
+            this.updatePlayerInGameModel(currentPlayer);
         }
     }
 
@@ -183,29 +186,29 @@ public class Executor implements CommandExecutor {
         if(currentLocation.pathExists(consumedEntity)) {
             currentLocation.removePath(consumedEntity);
             this.gameModel.getPaths().get(currentLocation.getId()).remove(consumedEntity);
-            updateLocationInGameModel(currentLocation);
+            this.updateLocationInGameModel(currentLocation);
         }
     }
 
     private void consumeFromPlayer(String consumedEntity) {
         Player currentPlayer = this.gameModel.getCurrentPlayer();
-        Location storeRoom = getStoreRoom();
+        Location storeRoom = this.getStoreRoom();
 
         if(currentPlayer.hasItemInInventory(consumedEntity)) {
             GameEntity subject = this.gameModel.getEntityList().get(consumedEntity);
 
             if(storeRoom != null) {
                 storeRoom.addAttribute(consumedEntity, subject);
-                updateLocationInGameModel(storeRoom);
+                this.updateLocationInGameModel(storeRoom);
             }
 
             currentPlayer.removeFromInventory(consumedEntity);
-            updatePlayerInGameModel(currentPlayer);
+            this.updatePlayerInGameModel(currentPlayer);
         }
     }
 
     private void consumeFromLocations(String consumedEntity) {
-        Location storeRoom = getStoreRoom();
+        Location storeRoom = this.getStoreRoom();
 
         for (Map.Entry<String, GameEntity> entry : this.gameModel.getEntityList().entrySet()) {
             if(entry.getValue().getType().equals("location")) {
@@ -216,11 +219,11 @@ public class Executor implements CommandExecutor {
 
                     if (storeRoom != null) {
                         storeRoom.addAttribute(consumedEntity, subject);
-                        updateLocationInGameModel(storeRoom);
+                        this.updateLocationInGameModel(storeRoom);
                     }
 
                     location.removeAttribute(consumedEntity);
-                    updateLocationInGameModel(location);
+                    this.updateLocationInGameModel(location);
                 }
             }
         }
@@ -229,7 +232,7 @@ public class Executor implements CommandExecutor {
 
 
     private Location getStoreRoom() {
-        return checkStoreRoomExists() ?
+        return this.checkStoreRoomExists() ?
                 (Location)this.gameModel.getEntityList().get("storeroom") :
                 null;
     }
@@ -254,10 +257,7 @@ public class Executor implements CommandExecutor {
 
 
     private void describeEntities(StringBuilder description, Location currentLocation) {
-        // Get attributes from current location
         Map<String, GameEntity> entities = currentLocation.getAttributes();
-
-        // Check if entities map is null or empty
         if (entities == null || entities.isEmpty()) {
             return;
         }
@@ -310,23 +310,23 @@ public class Executor implements CommandExecutor {
 
 
     private void produceEntities(String producedEntity) throws ExecutorException {
-        produceToLocation(producedEntity);
-        produceHealth(producedEntity);
-        producePath(producedEntity);
+        this.produceToLocation(producedEntity);
+        this.produceHealth(producedEntity);
+        this.producePath(producedEntity);
     }
 
     private void produceToLocation(String producedEntity)  {
         Player currentPlayer = this.gameModel.getCurrentPlayer();
         Location currentLocation = currentPlayer.getCurrentLocation();
-        Location storeRoom = getStoreRoom();
+        Location storeRoom = this.getStoreRoom();
         if(checkStoreRoomExists()) {
             Map<String, GameEntity> attributes = storeRoom.getAttributes();
             if (storeRoom.hasAttribute(producedEntity)) {
                 GameEntity entity = this.gameModel.getEntityList().get(producedEntity);
                 currentLocation.addAttribute(producedEntity, entity);
                 storeRoom.removeAttribute(producedEntity);
-                updateLocationInGameModel(storeRoom);
-                updateLocationInGameModel(currentLocation);
+                this.updateLocationInGameModel(storeRoom);
+                this.updateLocationInGameModel(currentLocation);
             }
         }
 
@@ -341,8 +341,8 @@ public class Executor implements CommandExecutor {
                     if (entity.getValue().getId().equalsIgnoreCase(producedEntity)) {
                         currentLocation.addAttribute(producedEntity, entity.getValue());
                         location.removeAttribute(producedEntity);
-                        updateLocationInGameModel(currentLocation);
-                        updateLocationInGameModel(location);
+                        this.updateLocationInGameModel(currentLocation);
+                        this.updateLocationInGameModel(location);
                         break;
                     }
                 }
@@ -363,7 +363,7 @@ public class Executor implements CommandExecutor {
             if(locationEntity.getValue().getType().equals("location")) {
                 if(locationEntity.getValue().getId().equalsIgnoreCase(producedEntity)) {
                     currentLocation.addPath(producedEntity);
-                    updateLocationInGameModel(currentLocation);
+                    this.updateLocationInGameModel(currentLocation);
                     this.gameModel.addPath(currentLocation.getId(),producedEntity);
                 }
             }
@@ -395,11 +395,9 @@ public class Executor implements CommandExecutor {
             currentPlayer.removeFromInventory(itemId);
         }
 
-        updateLocationInGameModel(currentLocation);
-        updatePlayerInGameModel(currentPlayer);
+        this.updateLocationInGameModel(currentLocation);
+        this.updatePlayerInGameModel(currentPlayer);
     }
-
-
 
 }
 
