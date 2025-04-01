@@ -14,7 +14,7 @@ public class Tokeniser {
 
     public HashMap<String, Integer> splitIntoTokenMap() throws TokeniserException {
         try {
-            playerName = command.split(":", 2)[0];
+            playerName = command.split(":", 2)[0].toLowerCase();
             String commands = command.split(":", 2)[1];
 
             HashMap<String, Integer> tokenMap = new HashMap<>();
