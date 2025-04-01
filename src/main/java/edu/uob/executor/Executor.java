@@ -5,6 +5,14 @@ import edu.uob.models.*;
 
 import java.util.*;
 
+/**
+ * Executor is the implementation of CommandExecutor,it contains all the logic for
+ * executing basic and customs commands in the game
+ * <p>
+ * The executor executes commands and updates game state maintained by the GameModel singleton,
+ * ensuring that player states, locations, and entities are kept in sync
+ */
+
 public class Executor implements CommandExecutor {
     GameModel gameModel;
 
@@ -86,7 +94,7 @@ public class Executor implements CommandExecutor {
                 }
             }
             return artefacts.toString();
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new ExecutorException(e.getMessage());
         }
     }
@@ -110,7 +118,7 @@ public class Executor implements CommandExecutor {
             }
             this.describeOtherPlayers(description);
             return description.toString();
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new ExecutorException(e.getMessage());
         }
     }
@@ -130,7 +138,7 @@ public class Executor implements CommandExecutor {
                     .append("you went to ")
                     .append(locationName)
                     .append("\n").toString();
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new ExecutorException(e.getMessage());
         }
     }
@@ -158,7 +166,7 @@ public class Executor implements CommandExecutor {
                 }
             }
             return gameAction.getNarration();
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new ExecutorException(e.getMessage());
         }
     }
@@ -172,7 +180,7 @@ public class Executor implements CommandExecutor {
     }
 
     private void consumeHealth(String consumedEntity) {
-        if(consumedEntity.equalsIgnoreCase("health")) {
+        if (consumedEntity.equalsIgnoreCase("health")) {
             Player currentPlayer = this.gameModel.getCurrentPlayer();
             currentPlayer.decreaseHealth();
             this.updatePlayerInGameModel(currentPlayer);
@@ -183,7 +191,7 @@ public class Executor implements CommandExecutor {
         Player currentPlayer = this.gameModel.getCurrentPlayer();
         Location currentLocation = currentPlayer.getCurrentLocation();
 
-        if(currentLocation.pathExists(consumedEntity)) {
+        if (currentLocation.pathExists(consumedEntity)) {
             currentLocation.removePath(consumedEntity);
             this.gameModel.getPaths().get(currentLocation.getId()).remove(consumedEntity);
             this.updateLocationInGameModel(currentLocation);
@@ -194,10 +202,10 @@ public class Executor implements CommandExecutor {
         Player currentPlayer = this.gameModel.getCurrentPlayer();
         Location storeRoom = this.getStoreRoom();
 
-        if(currentPlayer.hasItemInInventory(consumedEntity)) {
+        if (currentPlayer.hasItemInInventory(consumedEntity)) {
             GameEntity subject = this.gameModel.getEntityList().get(consumedEntity);
 
-            if(storeRoom != null) {
+            if (storeRoom != null) {
                 storeRoom.addAttribute(consumedEntity, subject);
                 this.updateLocationInGameModel(storeRoom);
             }
@@ -211,7 +219,7 @@ public class Executor implements CommandExecutor {
         Location storeRoom = this.getStoreRoom();
 
         for (Map.Entry<String, GameEntity> entry : this.gameModel.getEntityList().entrySet()) {
-            if(entry.getValue().getType().equals("location")) {
+            if (entry.getValue().getType().equals("location")) {
                 Location location = (Location) entry.getValue();
 
                 if (location.hasAttribute(consumedEntity)) {
@@ -230,13 +238,11 @@ public class Executor implements CommandExecutor {
     }
 
 
-
     private Location getStoreRoom() {
         return this.checkStoreRoomExists() ?
-                (Location)this.gameModel.getEntityList().get("storeroom") :
+                (Location) this.gameModel.getEntityList().get("storeroom") :
                 null;
     }
-
 
 
     private String checkEntityList(Map<String, Integer> tokenMap, Map<String, GameEntity> entityList) {
@@ -281,7 +287,7 @@ public class Executor implements CommandExecutor {
     }
 
     private void describeOtherPlayers(StringBuilder description) {
-        if (this.gameModel.getPlayerList().size()<=1) {
+        if (this.gameModel.getPlayerList().size() <= 1) {
             description.append("No other players in the game.\n");
             return;
         }
@@ -298,7 +304,7 @@ public class Executor implements CommandExecutor {
 
     }
 
-    private String getPathToLocation(Map<String, Integer> tokenMap, Map<String, HashSet<String>> pathList,Location currentLocation) {
+    private String getPathToLocation(Map<String, Integer> tokenMap, Map<String, HashSet<String>> pathList, Location currentLocation) {
         for (String key : tokenMap.keySet()) {
             if (pathList.get(currentLocation.getId()).contains(key)) {
                 return key;
@@ -308,18 +314,17 @@ public class Executor implements CommandExecutor {
     }
 
 
-
     private void produceEntities(String producedEntity) throws ExecutorException {
         this.produceToLocation(producedEntity);
         this.produceHealth(producedEntity);
         this.producePath(producedEntity);
     }
 
-    private void produceToLocation(String producedEntity)  {
+    private void produceToLocation(String producedEntity) {
         Player currentPlayer = this.gameModel.getCurrentPlayer();
         Location currentLocation = currentPlayer.getCurrentLocation();
         Location storeRoom = this.getStoreRoom();
-        if(checkStoreRoomExists()) {
+        if (checkStoreRoomExists()) {
             Map<String, GameEntity> attributes = storeRoom.getAttributes();
             if (storeRoom.hasAttribute(producedEntity)) {
                 GameEntity entity = this.gameModel.getEntityList().get(producedEntity);
@@ -332,7 +337,7 @@ public class Executor implements CommandExecutor {
 
 
         for (Map.Entry<String, GameEntity> locationEntity : this.gameModel.getEntityList().entrySet()) {
-            if(locationEntity.getValue().getType().equals("location")) {
+            if (locationEntity.getValue().getType().equals("location")) {
                 Location location = (Location) locationEntity.getValue();
                 if (location.getId().equals(currentLocation.getId())) {
                     continue;
@@ -351,26 +356,26 @@ public class Executor implements CommandExecutor {
     }
 
 
-    private void produceHealth(String producedEntity){
-        if(producedEntity.equalsIgnoreCase("health")){
-           this.gameModel.getCurrentPlayer().increaseHealth();
+    private void produceHealth(String producedEntity) {
+        if (producedEntity.equalsIgnoreCase("health")) {
+            this.gameModel.getCurrentPlayer().increaseHealth();
         }
     }
 
-    private void producePath(String producedEntity){
+    private void producePath(String producedEntity) {
         Location currentLocation = this.gameModel.getCurrentPlayer().getCurrentLocation();
         for (Map.Entry<String, GameEntity> locationEntity : this.gameModel.getEntityList().entrySet()) {
-            if(locationEntity.getValue().getType().equals("location")) {
-                if(locationEntity.getValue().getId().equalsIgnoreCase(producedEntity)) {
+            if (locationEntity.getValue().getType().equals("location")) {
+                if (locationEntity.getValue().getId().equalsIgnoreCase(producedEntity)) {
                     currentLocation.addPath(producedEntity);
                     this.updateLocationInGameModel(currentLocation);
-                    this.gameModel.addPath(currentLocation.getId(),producedEntity);
+                    this.gameModel.addPath(currentLocation.getId(), producedEntity);
                 }
             }
         }
     }
 
-    private boolean checkStoreRoomExists(){
+    private boolean checkStoreRoomExists() {
         return this.gameModel.getEntityList().containsKey("storeroom");
     }
 

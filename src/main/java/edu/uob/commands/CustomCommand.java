@@ -9,9 +9,10 @@ import edu.uob.models.Player;
 
 import java.util.*;
 
-public class CustomCommand extends Command{
+public class CustomCommand extends Command {
 
     GameAction gameAction;
+
     public CustomCommand(HashMap<String, Integer> tokenMap, GameAction gameAction) {
         super(tokenMap);
         this.gameAction = gameAction;

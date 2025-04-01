@@ -3,6 +3,10 @@ package edu.uob.models;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Class for storing the game actions fetched from actions.xml file
+ */
+
 public class GameAction {
     private Set<String> subjects;
     private Set<String> consumed;
@@ -32,11 +36,9 @@ public class GameAction {
         }
     }
 
-    public void addNarration(String narration){
+    public void addNarration(String narration) {
         this.narration = narration;
     }
-
-
 
     public Set<String> getSubjects() {
         return subjects;
@@ -54,13 +56,4 @@ public class GameAction {
         return narration;
     }
 
-    @Override
-    public String toString() {
-        return "Action{" +
-                "subjects=" + subjects +
-                ", consumed=" + consumed +
-                ", produced=" + produced +
-                ", narration='" + narration + '\'' +
-                '}';
-    }
 }

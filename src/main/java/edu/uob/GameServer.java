@@ -37,7 +37,11 @@ public final class GameServer {
     * @param actionsFile The game configuration file containing all game actions to use in your game
     */
     public GameServer(File entitiesFile, File actionsFile) {
-        this.gameModel = new GameModel(entitiesFile,actionsFile);
+        try{
+            this.gameModel = new GameModel(entitiesFile,actionsFile);
+        }catch(Exception e){
+            System.out.println("Error occurred while starting server");
+        }
 
     }
 

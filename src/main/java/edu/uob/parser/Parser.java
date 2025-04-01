@@ -24,44 +24,59 @@ public class Parser {
 
     public Command parseCommand() throws ParserException {
         try {
-            if (this.tokenMap == null || this.tokenMap.isEmpty()) {
-                throw new ParserException("Token map cannot be null or empty");
-            }
-
-            if (!this.gameModel.getPlayerList().containsKey(this.currentPlayer)) {
-                this.gameModel.addPlayer(this.currentPlayer);
-            }
-
-            this.gameModel.setCurrentPlayer(this.gameModel.getPlayerList().get(this.currentPlayer));
-
-            String matchedCommand = this.findMatchingCommand(this.tokenMap);
-
-            switch (matchedCommand) {
-                case "inventory":
-                case "inv":
-                    return new InvCommand(this.tokenMap);
-                case "get":
-                    return new GetCommand(this.tokenMap);
-                case "drop":
-                    return new DropCommand(this.tokenMap);
-                case "goto":
-                    return new GotoCommand(this.tokenMap);
-                case "look":
-                    return new LookCommand(this.tokenMap);
-                default:
-                    if (this.validateCommand(this.tokenMap)) {
-                        if (this.getPossibleActions(this.tokenMap).size() == 1) {
-                            return new CustomCommand(this.tokenMap, this.getPossibleActions(this.tokenMap).iterator().next());
-                        } else {
-                            throw new ParserException("Ambiguous command, multiple possible actions");
-                        }
-                    }
-                    throw new ParserException("Invalid command");
-            }
+            this.validateTokenMap();
+            this.ensureCurrentPlayerExists();
+            String matchedCommand = this.findMatchingCommand(tokenMap);
+            return this.resolveCommand(matchedCommand);
         } catch (Exception e) {
             throw new ParserException(String.format("Error parsing command: %s", e.getMessage()));
         }
     }
+
+    private void validateTokenMap() throws ParserException {
+        if (this.tokenMap == null || this.tokenMap.isEmpty()) {
+            throw new ParserException("Token map cannot be null or empty");
+        }
+    }
+
+    private void ensureCurrentPlayerExists() {
+        if (!this.gameModel.getPlayerList().containsKey(this.currentPlayer)) {
+            this.gameModel.addPlayer(this.currentPlayer);
+        }
+        this.gameModel.setCurrentPlayer(this.gameModel.getPlayerList().get(this.currentPlayer));
+    }
+
+    private Command resolveCommand(String matchedCommand) throws ParserException {
+        switch (matchedCommand) {
+            case "inventory":
+            case "inv":
+                return new InvCommand(this.tokenMap);
+            case "get":
+                return new GetCommand(this.tokenMap);
+            case "drop":
+                return new DropCommand(this.tokenMap);
+            case "goto":
+                return new GotoCommand(this.tokenMap);
+            case "look":
+                return new LookCommand(this.tokenMap);
+            default:
+                return this.processCustomCommand();
+        }
+    }
+
+    private Command processCustomCommand() throws ParserException {
+        if (validateCommand(tokenMap)) {
+            Set<GameAction> possibleActions = this.getPossibleActions(tokenMap);
+            if (possibleActions.size() == 1) {
+                return new CustomCommand(tokenMap, possibleActions.iterator().next());
+            } else {
+                throw new ParserException("Ambiguous command, multiple possible actions");
+            }
+        }
+        throw new ParserException("Invalid command");
+    }
+
+
     private String findMatchingCommand(HashMap<String, Integer> tokenMap) {
 
         for (String command : commands) {
@@ -89,7 +104,7 @@ public class Parser {
         return availableEntities;
     }
 
-    private Set<String> checkSubjectInCommand(HashSet<GameAction> gameActions)  {
+    private Set<String> checkSubjectInCommand(HashSet<GameAction> gameActions) {
         for (GameAction action : gameActions) {
             for (String subject : action.getSubjects()) {
                 if (tokenMap.containsKey(subject)) {
@@ -102,17 +117,15 @@ public class Parser {
 
     private boolean checkSubjectAvailability(Set<String> subjects) throws ParserException {
         HashMap<String, GameEntity> availableEntities = getAvailableEntities();
-        for (String subject: subjects) {
+        for (String subject : subjects) {
             if (!availableEntities.containsKey(subject)) {
                 throw new ParserException("Subject not available for this acion");
             }
         }
-
-
         return true;
     }
 
-    private HashSet<GameAction> getPossibleActions(HashMap<String, Integer> tokenMap) throws  ParserException {
+    private HashSet<GameAction> getPossibleActions(HashMap<String, Integer> tokenMap) throws ParserException {
         HashSet<GameAction> possibleActions = new HashSet<>();
         for (Map.Entry<String, HashSet<GameAction>> entry : this.gameModel.getActionList().entrySet()) {
             if (tokenMap.containsKey(entry.getKey())) {
@@ -120,8 +133,8 @@ public class Parser {
                 if (subjects != null) {
                     if (checkSubjectAvailability(subjects))
                         possibleActions.addAll(entry.getValue());
-                }else{
-                   throw new ParserException("Subject not available for this action");
+                } else {
+                    throw new ParserException("Subject not available for this action");
                 }
             }
         }

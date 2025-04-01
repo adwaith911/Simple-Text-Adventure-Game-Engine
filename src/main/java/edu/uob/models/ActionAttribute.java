@@ -1,6 +1,6 @@
 package edu.uob.models;
 
-public enum actionAttributeType {
+public enum ActionAttribute {
     subjects,
     consumed,
     produced;

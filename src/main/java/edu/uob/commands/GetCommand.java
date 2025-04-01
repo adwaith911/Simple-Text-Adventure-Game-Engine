@@ -6,7 +6,7 @@ import edu.uob.executor.ExecutorException;
 
 import java.util.HashMap;
 
-public class GetCommand extends  Command{
+public class GetCommand extends Command {
 
     public GetCommand(HashMap<String, Integer> tokenMap) {
         super(tokenMap);

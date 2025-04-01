@@ -6,10 +6,16 @@ import java.util.Map;
 
 import static edu.uob.Constants.MaxHealth;
 
-public class Player  {
+/**
+ * Class for storing player data. It contains
+ * details about the inventory,cuurent location
+ * and health of the player
+ */
+
+public class Player {
 
     String name;
-    Map<String,GameEntity> inventory;
+    Map<String, GameEntity> inventory;
     Location currentLocation;
     int health = MaxHealth;
 
@@ -25,12 +31,6 @@ public class Player  {
         return inventory;
     }
 
-    public void setInventory(Map<String, GameEntity> inventory) {
-        this.inventory = inventory;
-    }
-
-
-
     public void setCurrentLocation(Location currentLocation) {
         this.currentLocation = currentLocation;
     }
@@ -40,19 +40,13 @@ public class Player  {
     }
 
 
-
-
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void removeFromInventory(String itemKey) {
         if (itemKey == null) {
-            return; // Do nothing if key is null
+            return;
         }
 
         if (this.inventory.containsKey(itemKey)) {
@@ -60,9 +54,7 @@ public class Player  {
         }
     }
 
-    public void addToInventory(String itemKey, GameEntity item ){
-
-
+    public void addToInventory(String itemKey, GameEntity item) {
 
         if (!this.inventory.containsKey(itemKey)) {
             this.inventory.put(itemKey, item);
@@ -89,7 +81,6 @@ public class Player  {
         }
     }
 
-    // Reset health to the previous state
     public void resetHealth() {
         this.health = MaxHealth;
     }

@@ -1,5 +1,6 @@
 package edu.uob.models;
 
+import com.alexmerz.graphviz.ParseException;
 import com.alexmerz.graphviz.Parser;
 import com.alexmerz.graphviz.objects.Graph;
 import com.alexmerz.graphviz.objects.Node;
@@ -11,10 +12,21 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.*;
 
+/**
+ * /**
+ * The GameModel class serves as a singleton that maintains the game state,
+ * including players, locations, entities, paths, and actions. It acts as
+ * the single source of truth for the game world, ensuring consistency
+ * across all updates and actions.
+ * <p>
+ * Implements the Singleton design pattern to ensure that only one instance
+ * of GameModel exists throughout the game's lifecycle.
+ */
 public class GameModel {
 
     private Map<String, GameEntity> entityList;
@@ -24,7 +36,6 @@ public class GameModel {
     private Player currentPlayer;
     private Location startingLocation;
 
-
     public Location getStartingLocation() {
         return startingLocation;
     }
@@ -33,30 +44,25 @@ public class GameModel {
         return playerList;
     }
 
-    public void setPlayerList(Map<String, Player> playerList) {
-        this.playerList = playerList;
-    }
-
-
     public Player getCurrentPlayer() {
         return currentPlayer;
     }
 
     public void setCurrentPlayer(Player currentPlayer) {
         this.currentPlayer = currentPlayer;
-        if(this.currentPlayer.getCurrentLocation()==null) {
+        if (this.currentPlayer.getCurrentLocation() == null) {
             this.currentPlayer.setCurrentLocation(this.startingLocation);
         }
     }
 
     public void addPlayer(String playerName) {
-        if(!playerList.containsKey(playerName)) {
-           playerList.put(playerName, new Player(playerName));
+        if (!playerList.containsKey(playerName)) {
+            playerList.put(playerName, new Player(playerName));
         }
     }
 
 
-    public GameModel(File entitiesFile,File actionsFile)  {
+    public GameModel(File entitiesFile, File actionsFile) throws Exception {
         try {
             entityList = new HashMap<>();
             paths = new HashMap<>();
@@ -67,8 +73,8 @@ public class GameModel {
             this.loadEntities(entitiesFile);
             this.loadActionsFile(actionsFile);
 
-        }catch(Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new GameException(String.format("Error while loading game: %s", e.getMessage()));
         }
     }
 
@@ -77,29 +83,25 @@ public class GameModel {
         Document document = builder.parse(actionsFile);
         Element root = document.getDocumentElement();
         NodeList actions = root.getChildNodes();
-        for(int i=1; i<actions.getLength(); i+=2){
+        for (int i = 1; i < actions.getLength(); i += 2) {
             Element action = (Element) actions.item(i);
             GameAction newAction = new GameAction();
-            Element triggers = (Element)action.getElementsByTagName("triggers").item(0);
-
-            for(actionAttributeType type : actionAttributeType.values()) {
-                Element currentType = (Element) action.getElementsByTagName(type.toString()).item(0);
-                for(int k=0; k<currentType.getElementsByTagName("entity").getLength(); k++) {
+            Element triggers = (Element) action.getElementsByTagName("triggers").item(0);
+            for (ActionAttribute attribute : ActionAttribute.values()) {
+                Element currentType = (Element) action.getElementsByTagName(attribute.toString()).item(0);
+                for (int k = 0; k < currentType.getElementsByTagName("entity").getLength(); k++) {
                     String typePhrase = currentType.getElementsByTagName("entity").item(k).getTextContent();
-                    newAction.addAttributes(type.toString(), typePhrase);
+                    newAction.addAttributes(attribute.toString(), typePhrase);
                 }
             }
-            // Add narration to newAction
             Element narration = (Element) action.getElementsByTagName("narration").item(0);
             String narrationSentence = narration.getTextContent();
             newAction.addNarration(narrationSentence);
 
-            // Get trigger phrases
-            for(int j=0; j<triggers.getElementsByTagName("keyphrase").getLength(); j++){
+            for (int j = 0; j < triggers.getElementsByTagName("keyphrase").getLength(); j++) {
                 String triggerPhrase = triggers.getElementsByTagName("keyphrase").item(j).getTextContent();
-                // Check if the hashset of a trigger already exists
-                if(actionList.containsKey(triggerPhrase)){
-                    if(!actionExists(triggerPhrase, newAction)) {
+                if (actionList.containsKey(triggerPhrase)) {
+                    if (!actionExists(triggerPhrase, newAction)) {
                         actionList.get(triggerPhrase).add(newAction);
                         actionList.put(triggerPhrase, actionList.get(triggerPhrase));
                     }
@@ -114,34 +116,28 @@ public class GameModel {
 
     }
 
-    // Check if there are two identical actions in xml file
-    private boolean actionExists(String triggerPhrase, GameAction newAction){
+    private boolean actionExists(String triggerPhrase, GameAction newAction) {
         HashSet<GameAction> actions = actionList.get(triggerPhrase);
-        for(GameAction action : actions){
-            if(action.getSubjects().equals(newAction.getSubjects()) || action.getNarration().equals(newAction.getNarration())
+        for (GameAction action : actions) {
+            if (action.getSubjects().equals(newAction.getSubjects()) || action.getNarration().equals(newAction.getNarration())
                     || action.getConsumed().equals(newAction.getConsumed()) || action.getProduced().equals(newAction.getProduced()))
                 return true;
         }
         return false;
     }
 
-    public void loadEntities(File dotFile) {
+    public void loadEntities(File dotFile) throws GameException, FileNotFoundException, ParseException {
         try {
             Reader reader = new FileReader(dotFile);
             Parser parser = new Parser();
             parser.parse(reader);
-
-            // Get the parsed graph
             List<Graph> graphs = parser.getGraphs();
             if (graphs.isEmpty()) {
-                System.err.println("No graphs found in the DOT file.");
-                return;
+                throw new GameException("Entities file is empty");
             }
-
             Graph mainGraph = graphs.get(0);
             List<Graph> subGraphs = mainGraph.getSubgraphs();
 
-            // Process locations and their contents
             for (Graph subGraph : subGraphs) {
                 if (subGraph.getId().getId().equals("locations")) {
                     this.processLocations(subGraph);
@@ -151,71 +147,70 @@ public class GameModel {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw e;
         }
     }
 
     private void processLocations(Graph locationsGraph) {
-        // Iterate over each cluster (each location)
         for (Graph clusterGraph : locationsGraph.getSubgraphs()) {
-            String currentLocation = null;
-            Location locationEntity = null;
-            // Create a fresh map for each location's entities
-            Map<String, GameEntity> locationEntityList = new HashMap<>();
-
-            // Process nodes directly in the clusterGraph to find the location node.
-            for (Node node : clusterGraph.getNodes(false)) {
-                // If this node is not a subgraph, it represents the location.
-                if (!node.isSubgraph()) {
-                    currentLocation = node.getId().getId();
-                    String description = this.getNodeAttribute(node, "description");
-                    locationEntity = new Location(currentLocation, "location", description, null);
-                    if(this.startingLocation == null){
-                        this.startingLocation = locationEntity;
-                    }
-                    // Assume there's only one location node per cluster.
-                    break;
-                }
-            }
-
-            // If no location node was found, skip processing entities in this cluster.
+            Location locationEntity = this.extractLocation(clusterGraph);
             if (locationEntity == null) {
                 continue;
             }
-
-            // Process each subgraph within the cluster for artefacts, furniture, or characters.
-            for (Graph subgraph : clusterGraph.getSubgraphs()) {
-                String entityType = subgraph.getId().getId(); // e.g., "artefacts", "furniture", or "characters"
-                for (Node subNode : subgraph.getNodes(false)) {
-                    String entityId = subNode.getId().getId();
-                    String description = this.getNodeAttribute(subNode, "description");
-
-                    // Skip nodes that are just default definitions
-                    if (entityId.equals("node")) {
-                        continue;
-                    }
-
-                    // Determine the entity type based on the subgraph id
-                    String type;
-                    if (entityType.equals("artefacts")) {
-                        type = "artefact";
-                    } else if (entityType.equals("furniture")) {
-                        type = "furniture";
-                    } else if (entityType.equals("characters")) {
-                        type = "character";
-                    } else {
-                        type = "unknown";
-                    }
-
-                    // Create the GameEntity and add it to both the location-specific map and the global entity list.
-                    GameEntity entity = new GameEntity(entityId, type, description);
-                    locationEntityList.put(entityId, entity);
-                    entityList.put(entityId, entity);
-                }
-            }
-            // Set the collected attributes for this location and add the location entity to the global list.
+            Map<String, GameEntity> locationEntityList = extractEntities(clusterGraph);
             locationEntity.setAttributes(locationEntityList);
             entityList.put(locationEntity.getId(), locationEntity);
+        }
+    }
+
+    private Location extractLocation(Graph clusterGraph) {
+        for (Node node : clusterGraph.getNodes(false)) {
+            if (!node.isSubgraph()) {
+                String currentLocation = node.getId().getId();
+                String description = this.getNodeAttribute(node, "description");
+                Location location = new Location(currentLocation, "location", description, null);
+                if (this.startingLocation == null) {
+                    this.startingLocation = location;
+                }
+                return location;
+            }
+        }
+        return null;
+    }
+
+    private Map<String, GameEntity> extractEntities(Graph clusterGraph) {
+        Map<String, GameEntity> locationEntityList = new HashMap<>();
+        for (Graph subgraph : clusterGraph.getSubgraphs()) {
+            String entityType = subgraph.getId().getId();
+            for (Node subNode : subgraph.getNodes(false)) {
+                this.processEntity(subNode, entityType, locationEntityList);
+            }
+        }
+        return locationEntityList;
+    }
+
+    private void processEntity(Node subNode, String entityType, Map<String, GameEntity> locationEntityList) {
+        String entityId = subNode.getId().getId();
+        if (entityId.equals("node")) {
+            return;
+        }
+        String description = this.getNodeAttribute(subNode, "description");
+        String type = this.getEntityType(entityType);
+        GameEntity entity = new GameEntity(entityId, type, description);
+        locationEntityList.put(entityId, entity);
+        entityList.put(entityId, entity);
+    }
+
+    private String getEntityType(String entityType) {
+        switch (entityType) {
+            case "artefacts":
+                return "artefact";
+            case "furniture":
+                return "furniture";
+            case "characters":
+                return "character";
+            default:
+                return "unknown";
         }
     }
 
@@ -259,7 +254,6 @@ public class GameModel {
         if (!paths.containsKey(fromLocation)) {
             paths.put(fromLocation, new HashSet<>());
         }
-
         paths.get(fromLocation).add(toLocation);
     }
 
