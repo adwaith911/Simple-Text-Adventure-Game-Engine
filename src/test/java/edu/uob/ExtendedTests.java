@@ -30,7 +30,6 @@ class ExtendedTests {
     @Test
     void testMultiplePlayersGetSameItem()
     {
-
         String response = sendCommandToServer("simon: get axe");
         System.out.println(response);
         response = sendCommandToServer("simon: inv");
@@ -147,6 +146,26 @@ class ExtendedTests {
         response = response.toLowerCase();
         assertTrue(response.contains("horn"), "Horn should still be present as it wasn't consumed");
         assertTrue(response.contains("lumberjack"), "Lumberjack was not produced after blowing the horn");
+    }
+
+    @Test
+    void testPlayersMaintainIndependentLocations() {
+
+        sendCommandToServer("simon: goto forest");
+        String simonLook = sendCommandToServer("simon: look").toLowerCase();
+        String adwaithLook = sendCommandToServer("adwaith: look").toLowerCase();
+        assertTrue(simonLook.contains("you are in forest"), "Simon should be in the forest");
+        assertTrue(adwaithLook.contains("you are in cabin"), "Adwaith should remain in the starting location");
+    }
+
+    @Test
+    void testMultiplePlayersinSameLocation() {
+        sendCommandToServer("simon: goto forest");
+        sendCommandToServer("adwaith: goto forest");
+        sendCommandToServer("sion: goto forest");
+        String simonLook = sendCommandToServer("simon: look").toLowerCase();
+        assertTrue(simonLook.contains("adwaith"), "Simon should be able to see adwaith");
+        assertTrue(simonLook.contains("sion"), "Simon should be able to see sion");
     }
 
 }

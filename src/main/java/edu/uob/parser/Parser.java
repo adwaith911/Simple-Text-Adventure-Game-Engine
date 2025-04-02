@@ -68,6 +68,7 @@ public class Parser {
         if (validateCommand(tokenMap)) {
             Set<GameAction> possibleActions = this.getPossibleActions(tokenMap);
             if (possibleActions.size() == 1) {
+                validateOnlySubjectsPresent(possibleActions.iterator().next(),tokenMap);
                 return new CustomCommand(tokenMap, possibleActions.iterator().next());
             } else {
                 throw new ParserException("Ambiguous command, multiple possible actions");
@@ -119,7 +120,7 @@ public class Parser {
         HashMap<String, GameEntity> availableEntities = getAvailableEntities();
         for (String subject : subjects) {
             if (!availableEntities.containsKey(subject)) {
-                throw new ParserException("Subject not available for this acion");
+                throw new ParserException("Subject not available for this action");
             }
         }
         return true;
@@ -139,6 +140,17 @@ public class Parser {
             }
         }
         return possibleActions;
+    }
+
+    private void validateOnlySubjectsPresent(GameAction action, HashMap<String, Integer> tokenMap) throws ParserException {
+
+        Set<String> validSubjects = new HashSet<>(action.getSubjects());
+        Map<String, GameEntity> entityList = this.gameModel.getEntityList();
+        for (String token : tokenMap.keySet()) {
+            if (!validSubjects.contains(token) && entityList.containsKey(token)) {
+                throw new ParserException("Invalid token in command: '" + token + "' is not a valid subject for this action");
+            }
+        }
     }
 
 }

@@ -27,11 +27,15 @@ public class Executor implements CommandExecutor {
     @Override
     public String executeDropCommand(HashMap<String, Integer> tokenMap) throws ExecutorException {
         try {
+            if (this.containsMultipleEntities(tokenMap, this.gameModel.getEntityList())
+                    || this.containsMultipleActions(tokenMap, this.gameModel.getActionList())) {
+                throw new ExecutorException("Multiple entities or actions in command");
+            }
             Player currentPlayer = this.gameModel.getCurrentPlayer();
             Map<String, GameEntity> playerInventory = currentPlayer.getInventory();
             String item = this.checkEntityList(tokenMap, playerInventory);
             if (item == null) {
-                throw new ExecutorException("Item to be dropped is not in inventory or multiple items in command");
+                throw new ExecutorException("Item to be dropped is not in inventory");
             }
             GameEntity artefact = currentPlayer.getInventory().get(item);
             Location currentLocation = currentPlayer.getCurrentLocation();
@@ -39,12 +43,9 @@ public class Executor implements CommandExecutor {
             currentPlayer.removeFromInventory(artefact.getId());
             this.updateLocationInGameModel(currentLocation);
             this.updatePlayerInGameModel(currentPlayer);
-
             return new StringBuilder()
-                    .append("You dropped a ")
-                    .append(artefact.getId())
-                    .append("\n")
-                    .toString();
+                    .append("You dropped a ").append(artefact.getId())
+                    .append("\n").toString();
         } catch (Exception e) {
             throw new ExecutorException(e.getMessage());
         }
@@ -53,11 +54,15 @@ public class Executor implements CommandExecutor {
     @Override
     public String executeGetCommand(HashMap<String, Integer> tokenMap) throws ExecutorException {
         try {
+            if (this.containsMultipleEntities(tokenMap, this.gameModel.getEntityList())
+                    || this.containsMultipleActions(tokenMap, this.gameModel.getActionList())) {
+                throw new ExecutorException("Multiple entities or actions in command");
+            }
             Player currentPlayer = this.gameModel.getCurrentPlayer();
             Location currentLocation = currentPlayer.getCurrentLocation();
             String item = this.checkEntityList(tokenMap, currentLocation.getAttributes());
             if (item == null) {
-                throw new ExecutorException("Invalid item to get or multiple items in command");
+                throw new ExecutorException("Invalid item to get ");
             }
             GameEntity artefact = currentLocation.getAttributes().get(item.toLowerCase());
             currentPlayer.addToInventory(artefact.getId(), artefact);
@@ -65,10 +70,8 @@ public class Executor implements CommandExecutor {
             this.updateLocationInGameModel(currentLocation);
             this.updatePlayerInGameModel(currentPlayer);
             return new StringBuilder()
-                    .append("You picked up a ")
-                    .append(artefact.getId())
-                    .append("\n")
-                    .toString();
+                    .append("You picked up a ").append(artefact.getId())
+                    .append("\n").toString();
         } catch (Exception e) {
             throw new ExecutorException(e.getMessage());
         }
@@ -77,6 +80,10 @@ public class Executor implements CommandExecutor {
     @Override
     public String executeInvCommand(HashMap<String, Integer> tokenMap) throws ExecutorException {
         try {
+            if (this.containsEntity(tokenMap, this.gameModel.getEntityList())
+                    || this.containsMultipleActions(tokenMap, this.gameModel.getActionList())) {
+                throw new ExecutorException("Multiple entities or actions in command");
+            }
             StringBuilder artefacts = new StringBuilder();
             Map<String, GameEntity> playerInventory = this.gameModel.getCurrentPlayer().getInventory();
             if (playerInventory.isEmpty()) {
@@ -86,10 +93,8 @@ public class Executor implements CommandExecutor {
                 for (Map.Entry<String, GameEntity> entry : playerInventory.entrySet()) {
                     GameEntity entity = entry.getValue();
                     if (entity.getType().equals("artefact")) {
-                        artefacts.append(entity.getId())
-                                .append(" - ")
-                                .append(entity.getDescription())
-                                .append("\n");
+                        artefacts.append(entity.getId()).append(" - ")
+                                .append(entity.getDescription()).append("\n");
                     }
                 }
             }
@@ -102,13 +107,15 @@ public class Executor implements CommandExecutor {
     @Override
     public String executeLookCommand(HashMap<String, Integer> tokenMap) throws ExecutorException {
         try {
+            if (this.containsEntity(tokenMap, this.gameModel.getEntityList())
+                    || this.containsMultipleActions(tokenMap, this.gameModel.getActionList())) {
+                throw new ExecutorException("Multiple entities or actions in command");
+            }
             StringBuilder description = new StringBuilder();
             Location currentLocation = this.gameModel.getCurrentPlayer().getCurrentLocation();
             description.append(new StringBuilder()
-                    .append("You are in ")
-                    .append(currentLocation.getId())
-                    .append(" - ")
-                    .append(currentLocation.getDescription())
+                    .append("You are in ").append(currentLocation.getId())
+                    .append(" - ").append(currentLocation.getDescription())
                     .append("\n\n"));
             if (!currentLocation.getAttributes().isEmpty()) {
                 this.describeEntities(description, currentLocation);
@@ -126,6 +133,10 @@ public class Executor implements CommandExecutor {
     @Override
     public String executeGotoCommand(HashMap<String, Integer> tokenMap) throws ExecutorException {
         try {
+            if (this.containsMultipleEntities(tokenMap, this.gameModel.getEntityList())
+                    || this.containsMultipleActions(tokenMap, this.gameModel.getActionList())) {
+                throw new ExecutorException("Multiple entities or actions in command");
+            }
             Location currentLocation = this.gameModel.getCurrentPlayer().getCurrentLocation();
             String locationName = this.getPathToLocation(tokenMap, this.gameModel.getPaths(), currentLocation);
             if (locationName == null) {
@@ -135,8 +146,7 @@ public class Executor implements CommandExecutor {
             Location location = (Location) entityList.get(locationName);
             this.gameModel.getCurrentPlayer().setCurrentLocation(location);
             return new StringBuilder()
-                    .append("you went to ")
-                    .append(locationName)
+                    .append("you went to ").append(locationName)
                     .append("\n").toString();
         } catch (Exception e) {
             throw new ExecutorException(e.getMessage());
@@ -237,28 +247,65 @@ public class Executor implements CommandExecutor {
         }
     }
 
-
     private Location getStoreRoom() {
-        return this.checkStoreRoomExists() ?
-                (Location) this.gameModel.getEntityList().get("storeroom") :
-                null;
+        if (this.checkStoreRoomExists()) {
+            return (Location) this.gameModel.getEntityList().get("storeroom");
+        } else {
+            return null;
+        }
     }
 
-
     private String checkEntityList(Map<String, Integer> tokenMap, Map<String, GameEntity> entityList) {
-        String matchedKey = null;
-        int matchCount = 0;
-
         for (String key : tokenMap.keySet()) {
             if (entityList.containsKey(key) && entityList.get(key).getType().equals("artefact")) {
-                matchCount++;
-                if (matchCount > 1) {
-                    return null;
-                }
-                matchedKey = key;
+                return key;
             }
         }
-        return matchedKey;
+        return null;
+    }
+
+    private boolean containsEntity(Map<String, Integer> tokenMap, Map<String, GameEntity> entityList) {
+        for (String key : tokenMap.keySet()) {
+            if (entityList.containsKey(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsMultipleActions(Map<String, Integer> tokenMap, Map<String, HashSet<GameAction>> actionList) {
+        Set<String> builtInCommands = new HashSet<>(Arrays.asList("get", "drop", "look", "goto", "inv", "inventory"));
+        int actionCount = 0;
+        for (String key : tokenMap.keySet()) {
+            if (builtInCommands.contains(key)) {
+                actionCount++;
+                if (actionCount > 1) {
+                    return true;
+                }
+            }
+        }
+        for (String key : tokenMap.keySet()) {
+            if (actionList.containsKey(key)) {
+                actionCount++;
+                if (actionCount > 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean containsMultipleEntities(Map<String, Integer> tokenMap, Map<String, GameEntity> entityList) {
+        int entityCount = 0;
+        for (String key : tokenMap.keySet()) {
+            if (entityList.containsKey(key)) {
+                entityCount++;
+                if (entityCount > 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 
@@ -268,13 +315,10 @@ public class Executor implements CommandExecutor {
             return;
         }
         description.append("The entities in this location are :").append("\n");
-        // Iterate through the entities
         for (Map.Entry<String, GameEntity> entry : entities.entrySet()) {
             GameEntity entity = entry.getValue();
             description.append(entity.getId())
-                    .append(" - ")
-                    .append(entity.getDescription())
-                    .append("\n");
+                    .append(" - ").append(entity.getDescription()).append("\n");
         }
     }
 
@@ -334,7 +378,6 @@ public class Executor implements CommandExecutor {
                 this.updateLocationInGameModel(currentLocation);
             }
         }
-
 
         for (Map.Entry<String, GameEntity> locationEntity : this.gameModel.getEntityList().entrySet()) {
             if (locationEntity.getValue().getType().equals("location")) {
