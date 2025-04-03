@@ -1,7 +1,6 @@
 package edu.uob.parser;
 
 import edu.uob.commands.*;
-import edu.uob.executor.ExecutorException;
 import edu.uob.models.GameAction;
 import edu.uob.models.GameEntity;
 import edu.uob.models.GameModel;
@@ -68,7 +67,7 @@ public class Parser {
         if (validateCommand(tokenMap)) {
             Set<GameAction> possibleActions = this.getPossibleActions(tokenMap);
             if (possibleActions.size() == 1) {
-                validateOnlySubjectsPresent(possibleActions.iterator().next(),tokenMap);
+                this.validateOnlySubjectsPresent(possibleActions.iterator().next(),tokenMap);
                 return new CustomCommand(tokenMap, possibleActions.iterator().next());
             } else {
                 throw new ParserException("Ambiguous command, multiple possible actions");
@@ -131,14 +130,15 @@ public class Parser {
             return tokenMap.containsKey(actionKey);
         }
 
-        String[] actionWords = actionKey.split("\\s+");
-        for (String word : actionWords) {
+        Set<String> actionWordsSet = new HashSet<>(Arrays.asList(actionKey.split("\\s+")));
+        for (String word : actionWordsSet) {
             if (!tokenMap.containsKey(word)) {
                 return false;
             }
         }
         return true;
     }
+
 
     private HashSet<GameAction> getPossibleActions(HashMap<String, Integer> tokenMap) throws ParserException {
         HashSet<GameAction> possibleActions = new HashSet<>();
@@ -164,7 +164,7 @@ public class Parser {
         Map<String, GameEntity> entityList = this.gameModel.getEntityList();
         for (String token : tokenMap.keySet()) {
             if (!validSubjects.contains(token) && entityList.containsKey(token)) {
-                throw new ParserException("Invalid token in command: '" + token + "' is not a valid subject for this action");
+                throw new ParserException("Invalid token in command");
             }
         }
     }

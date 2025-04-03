@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: edu.uob.EntitiesFileTests
+Test set: edu.uob.ExtendedTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s - in edu.uob.EntitiesFileTests
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.09 s - in edu.uob.ExtendedTests

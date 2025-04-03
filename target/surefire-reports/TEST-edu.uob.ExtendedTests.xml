@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="edu.uob.EntitiesFileTests" time="0.019" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="edu.uob.ExtendedTests" time="0.09" tests="9" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -12,9 +12,9 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="GB"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-17-openjdk-17.0.14.0.7-3.el8.x86_64/lib"/>
-    <property name="sun.java.command" value="/home/ie24068/Documents/java_assignment/cw-stag/target/surefire/surefirebooter9341001595781872022.jar /home/ie24068/Documents/java_assignment/cw-stag/target/surefire 2025-04-01T14-54-08_849-jvmRun1 surefire5107173958539370978tmp surefire_012738538573471951062tmp"/>
+    <property name="sun.java.command" value="/home/ie24068/Documents/java_assignment/cw-stag/target/surefire/surefirebooter12557792872237813072.jar /home/ie24068/Documents/java_assignment/cw-stag/target/surefire 2025-04-03T11-22-26_165-jvmRun1 surefire1033831331208688870tmp surefire_08436703601317749973tmp"/>
     <property name="jdk.debug" value="release"/>
-    <property name="test" value="edu.uob.EntitiesFileTests"/>
+    <property name="test" value="edu.uob.ExtendedTests"/>
     <property name="surefire.test.class.path" value="/home/ie24068/Documents/java_assignment/cw-stag/target/test-classes:/home/ie24068/Documents/java_assignment/cw-stag/target/classes:/home/ie24068/.m2/repository/org/junit/jupiter/junit-jupiter/5.8.2/junit-jupiter-5.8.2.jar:/home/ie24068/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.8.2/junit-jupiter-api-5.8.2.jar:/home/ie24068/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/home/ie24068/.m2/repository/org/junit/platform/junit-platform-commons/1.8.2/junit-platform-commons-1.8.2.jar:/home/ie24068/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/home/ie24068/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.8.2/junit-jupiter-params-5.8.2.jar:/home/ie24068/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.8.2/junit-jupiter-engine-5.8.2.jar:/home/ie24068/.m2/repository/org/junit/platform/junit-platform-engine/1.8.2/junit-platform-engine-1.8.2.jar:/home/ie24068/.m2/repository/org/junit/platform/junit-platform-suite/1.8.2/junit-platform-suite-1.8.2.jar:/home/ie24068/.m2/repository/org/junit/platform/junit-platform-suite-api/1.8.2/junit-platform-suite-api-1.8.2.jar:/home/ie24068/.m2/repository/org/junit/platform/junit-platform-suite-engine/1.8.2/junit-platform-suite-engine-1.8.2.jar:/home/ie24068/.m2/repository/org/junit/platform/junit-platform-suite-commons/1.8.2/junit-platform-suite-commons-1.8.2.jar:/home/ie24068/.m2/repository/org/junit/platform/junit-platform-launcher/1.8.2/junit-platform-launcher-1.8.2.jar:/home/ie24068/.m2/repository/com/alexmerz/graphviz/dot-parser/1.0/dot-parser-1.0.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="/home/ie24068"/>
@@ -28,12 +28,12 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="surefire.real.class.path" value="/home/ie24068/Documents/java_assignment/cw-stag/target/surefire/surefirebooter9341001595781872022.jar"/>
+    <property name="surefire.real.class.path" value="/home/ie24068/Documents/java_assignment/cw-stag/target/surefire/surefirebooter12557792872237813072.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.14+7-LTS"/>
     <property name="user.name" value="ie24068"/>
     <property name="path.separator" value=":"/>
-    <property name="os.version" value="4.18.0-553.44.1.el8_10.x86_64"/>
+    <property name="os.version" value="4.18.0-553.45.1.el8_10.x86_64"/>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="file.encoding" value="UTF-8"/>
     <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
@@ -54,5 +54,13 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testBasicEntitiesFileIsReadable" classname="edu.uob.EntitiesFileTests" time="0.015"/>
+  <testcase name="testBridgeRiverConsumesLogAndProducesClearing" classname="edu.uob.ExtendedTests" time="0.048"/>
+  <testcase name="testBlowHornProducesLumberjack" classname="edu.uob.ExtendedTests" time="0.005"/>
+  <testcase name="testMultiplePlayersGetSameItem" classname="edu.uob.ExtendedTests" time="0.003"/>
+  <testcase name="testMultiplePlayersinSameLocation" classname="edu.uob.ExtendedTests" time="0.003"/>
+  <testcase name="testPlayersMaintainIndependentLocations" classname="edu.uob.ExtendedTests" time="0.004"/>
+  <testcase name="testChopTreeConsumesTreeAndProducesLog" classname="edu.uob.ExtendedTests" time="0.005"/>
+  <testcase name="testFightElfConsumesHealth" classname="edu.uob.ExtendedTests" time="0.004"/>
+  <testcase name="testOpenTrapdoorConsumesKeyAndProducesCellar" classname="edu.uob.ExtendedTests" time="0.003"/>
+  <testcase name="testDigGroundConsumesGroundAndProducesHoleAndGold" classname="edu.uob.ExtendedTests" time="0.006"/>
 </testsuite>

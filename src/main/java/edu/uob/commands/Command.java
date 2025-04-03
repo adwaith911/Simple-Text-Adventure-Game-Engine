@@ -6,12 +6,12 @@ import edu.uob.executor.ExecutorException;
 import java.util.HashMap;
 
 /**
- * Commandserves as the abstract class for commands, with each command being a
+ * Command serves as the abstract class for commands, with each command being a
  * concrete command subclass following the command design pattern.
  * <p>
  * The abstract execute method in this class delegates execution logic to any class
- * implementing CommandTreeExecutor following visitor design pattern, this
- * is done so that execution logic is not tied on to command classes and  can be changed easily
+ * implementing CommandExecutor following visitor design pattern, this
+ * is done so that execution logic is not tied on to command classes and can be changed easily
  * without affecting the command classes.
  */
 public abstract class Command {
