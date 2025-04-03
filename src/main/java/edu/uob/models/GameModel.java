@@ -161,6 +161,10 @@ public class GameModel {
             locationEntity.setAttributes(locationEntityList);
             entityList.put(locationEntity.getId(), locationEntity);
         }
+        if (!entityList.containsKey("storeroom")) {
+            Location storeroom = new Location("storeroom", "location", "Store room for game", new HashMap<>());
+            entityList.put("storeroom", storeroom);
+        }
     }
 
     private Location extractLocation(Graph clusterGraph) {
