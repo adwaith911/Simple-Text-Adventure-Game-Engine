@@ -31,9 +31,7 @@ class ExtendedTests {
     void testMultiplePlayersGetSameItem()
     {
         String response = sendCommandToServer("simon: get axe");
-        System.out.println(response);
         response = sendCommandToServer("simon: inv");
-        System.out.println(response);
         assertTrue(response.contains("axe"), "Failed to pickup axe in earlier command");
         sendCommandToServer("adwaith: get axe");
         response = sendCommandToServer(" adwaith: inv");

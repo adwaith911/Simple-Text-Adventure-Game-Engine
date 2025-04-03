@@ -126,14 +126,30 @@ public class Parser {
         return true;
     }
 
+    private boolean isActionTriggerPresent(String actionKey, HashMap<String, Integer> tokenMap) {
+        if (!actionKey.contains(" ")) {
+            return tokenMap.containsKey(actionKey);
+        }
+
+        String[] actionWords = actionKey.split("\\s+");
+        for (String word : actionWords) {
+            if (!tokenMap.containsKey(word)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private HashSet<GameAction> getPossibleActions(HashMap<String, Integer> tokenMap) throws ParserException {
         HashSet<GameAction> possibleActions = new HashSet<>();
         for (Map.Entry<String, HashSet<GameAction>> entry : this.gameModel.getActionList().entrySet()) {
-            if (tokenMap.containsKey(entry.getKey())) {
+            String actionKey = entry.getKey();
+            if (isActionTriggerPresent(actionKey, tokenMap)) {
                 Set<String> subjects = this.checkSubjectInCommand(entry.getValue());
                 if (subjects != null) {
-                    if (checkSubjectAvailability(subjects))
+                    if (checkSubjectAvailability(subjects)) {
                         possibleActions.addAll(entry.getValue());
+                    }
                 } else {
                     throw new ParserException("Subject not available for this action");
                 }
