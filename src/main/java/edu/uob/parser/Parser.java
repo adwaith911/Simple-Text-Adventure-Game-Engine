@@ -64,16 +64,13 @@ public class Parser {
     }
 
     private Command processCustomCommand() throws ParserException {
-        if (validateCommand(tokenMap)) {
-            Set<GameAction> possibleActions = this.getPossibleActions(tokenMap);
-            if (possibleActions.size() == 1) {
-                this.validateOnlySubjectsPresent(possibleActions.iterator().next(),tokenMap);
-                return new CustomCommand(tokenMap, possibleActions.iterator().next());
-            } else {
-                throw new ParserException("Ambiguous command, multiple possible actions");
-            }
+        Set<GameAction> possibleActions = this.getPossibleActions(tokenMap);
+        if (possibleActions.size() == 1) {
+            this.validateOnlySubjectsPresent(possibleActions.iterator().next(), tokenMap);
+            return new CustomCommand(tokenMap, possibleActions.iterator().next());
+        } else {
+            throw new ParserException("Ambiguous command, multiple possible actions");
         }
-        throw new ParserException("Invalid command");
     }
 
 
@@ -155,6 +152,10 @@ public class Parser {
                 }
             }
         }
+        if (possibleActions.isEmpty()) {
+            throw new ParserException("No valid actions found for this command");
+        }
+
         return possibleActions;
     }
 
